@@ -1,0 +1,36 @@
+# Maven
+/target/
+/pom.xml.tag
+/pom.xml.releaseBackup
+/pom.xml.versionsBackup
+/logs/
+*.log
+
+# IntelliJ IDEA
+.idea/
+/*.iml
+*.ipr
+*.iws
+out/
+
+# VS Code
+.vscode/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.bak
+
+# Spring specific
+*.jar
+*.war
+*.ear
+
+# Environment files
+.env
+# Others
