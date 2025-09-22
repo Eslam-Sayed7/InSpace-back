@@ -3,7 +3,7 @@ package com.InSpace.Api.adapters.controller;
 import com.InSpace.Api.config.Security.JWTGenerator;
 import com.InSpace.Api.infra.repository.RoleRepository;
 import com.InSpace.Api.infra.repository.UserRepository;
-import com.InSpace.Api.services.EmailService;
+// import com.InSpace.Api.services.EmailService;
 import com.InSpace.Api.services.UserService;
 import com.InSpace.Api.services.dto.Auth.AuthServiceResult;
 import com.InSpace.Api.services.dto.Auth.LoginRequestModel;
@@ -33,16 +33,15 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JWTGenerator jwtGenerator;
-    private final EmailService emailService;
+    // private final EmailService emailService;
     private final UserService userService;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
-            EmailService emailService, RoleRepository roleRepository, PasswordEncoder passwordEncoder,
+            RoleRepository roleRepository, PasswordEncoder passwordEncoder,
             JWTGenerator jwtGenerator, UserService userService) {
         this.authenticationManager = authenticationManager;
         this.jwtGenerator = jwtGenerator;
-        this.emailService = emailService;
         this.userService = userService;
     }
 
@@ -86,7 +85,7 @@ public class AuthController {
                 email.setTo(registerDto.getEmail());
                 email.setSubject("Registration");
                 email.setEmailBody("You have successfully registered");
-                emailService.sendEmail(email);
+                // emailService.sendEmail(email);
                 result.setMessage("Registered successfully");
                 return new ResponseEntity<AuthServiceResult>(result, HttpStatus.OK);
             }

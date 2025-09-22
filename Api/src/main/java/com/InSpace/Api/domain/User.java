@@ -3,6 +3,8 @@ package com.InSpace.Api.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "users")
@@ -31,9 +33,11 @@ public class User {
     private boolean isSuper = false;
 
     @Column
+    @CreationTimestamp
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column
+    @UpdateTimestamp
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.EAGER)

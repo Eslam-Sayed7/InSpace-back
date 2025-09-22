@@ -17,12 +17,8 @@ import java.util.Collections;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private UserRepository userRepository;
-
     @Autowired
-    public CustomUserDetailsService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private UserRepository userRepository;
 
     public UserDetails loadUserById(Long Id) throws ExceptionInInitializerError {
         User user = userRepository.findById(Id).orElseThrow(() -> new RuntimeException("User Not found"));

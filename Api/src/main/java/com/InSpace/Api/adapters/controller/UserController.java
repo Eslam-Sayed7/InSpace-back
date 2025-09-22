@@ -24,7 +24,7 @@ public class UserController {
 
     @Autowired
     public UserController(AuthenticationManager authenticationManager, UserRepository userRepository,
-            EmailService emailService, RoleRepository roleRepository, PasswordEncoder passwordEncoder,
+            RoleRepository roleRepository, PasswordEncoder passwordEncoder,
             JWTGenerator jwtGenerator, UserService userService) {
         this.userService = userService;
     }

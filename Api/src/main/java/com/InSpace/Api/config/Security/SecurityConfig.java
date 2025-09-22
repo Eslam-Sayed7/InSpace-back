@@ -1,6 +1,5 @@
 package com.InSpace.Api.config.Security;
 
-import com.InSpace.Api.services.impl.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,7 +21,7 @@ public class SecurityConfig {
     private final JwtAuthEntryPoint authEntryPoint;
 
     @Autowired
-    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthEntryPoint authEntryPoint) {
+    public SecurityConfig(JwtAuthEntryPoint authEntryPoint) {
         this.authEntryPoint = authEntryPoint;
     }
 
