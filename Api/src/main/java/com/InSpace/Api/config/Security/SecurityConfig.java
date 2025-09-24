@@ -30,30 +30,20 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for APIs
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api/auth/**", "/api/user/**")
-                        .permitAll() // Public endpoints
-
-                        // .requestMatchers("/api/v1/management/**").hasAnyRole(ADMIN.name(),
-                        // MANAGER.name())
-                        // .requestMatchers(GET,
-                        // "/api/v1/management/**").hasAnyAuthority(ADMIN_READ.name(),
-                        // MANAGER_READ.name())
-                        // .requestMatchers(POST,
-                        // "/api/v1/management/**").hasAnyAuthority(ADMIN_CREATE.name(),
-                        // MANAGER_CREATE.name())
-                        // .requestMatchers(PUT,
-                        // "/api/v1/management/**").hasAnyAuthority(ADMIN_UPDATE.name(),
-                        // MANAGER_UPDATE.name())
-                        // .requestMatchers(DELETE,
-                        // "/api/v1/management/**").hasAnyAuthority(ADMIN_DELETE.name(),
-                        // MANAGER_DELETE.name())
-
-                        .anyRequest().authenticated() // Secure all other endpoints
-                )
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/index.html", // Add this
+                                "/v3/api-docs/**",
+                                "/webjars/**", // Add this for Swagger UI assets
+                                "/api/auth/**",
+                                "/api/user/**")
+                        .permitAll()
+                        .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(authEntryPoint)) // Handle unauthorized access
+                        .authenticationEntryPoint(authEntryPoint))
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class) // JWT Filter
                 .build();
     }
