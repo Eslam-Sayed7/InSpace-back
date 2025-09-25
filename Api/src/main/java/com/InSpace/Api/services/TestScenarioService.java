@@ -5,12 +5,17 @@ import com.InSpace.Api.domain.TestSuite;
 import com.InSpace.Api.domain.Tag;
 import com.InSpace.Api.infra.repository.TestScenarioRepository;
 import com.InSpace.Api.infra.repository.TestSuiteRepository;
+import com.InSpace.Api.infra.Specifications.TestScenarioSpecifications;
 import com.InSpace.Api.infra.repository.TagRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -31,9 +36,7 @@ public class TestScenarioService {
         this.tagRepository = tagRepository;
     }
 
-    /**
-     * Create a new test scenario
-     */
+    @Transactional
     public TestScenario createTestScenario(String name, String description, Short priority, Long suiteId) {
         TestSuite testSuite = testSuiteRepository.findById(suiteId)
                 .orElseThrow(() -> new IllegalArgumentException("Test suite with ID " + suiteId + " not found"));
@@ -46,6 +49,7 @@ public class TestScenarioService {
         return testScenarioRepository.save(scenario);
     }
 
+    @Transactional
     public TestScenario createTestScenarioWithTags(String name, String description, Short priority,
             Long suiteId, Set<String> tagNames) {
         TestScenario scenario = createTestScenario(name, description, priority, suiteId);
@@ -56,9 +60,8 @@ public class TestScenarioService {
                         .orElseGet(() -> tagRepository.save(new Tag(tagName)));
                 scenario.addTag(tag);
             }
-            testScenarioRepository.save(scenario); // Save again to persist tag associations
+            testScenarioRepository.save(scenario);
         }
-
         return scenario;
     }
 
@@ -68,27 +71,65 @@ public class TestScenarioService {
     }
 
     @Transactional(readOnly = true)
-    public List<TestScenario> findByTestSuite(Long suiteId) {
-        return testScenarioRepository.findByTestSuiteSuiteId(suiteId);
+    public Page<TestScenario> findBySuite(Long suiteId, int page, int size, String sortField, String sortDir) {
+        Pageable pageable;
+        if (sortField == null || sortField.isEmpty() || sortDir == null || sortDir.isEmpty()) {
+            pageable = PageRequest.of(page, size, Sort.unsorted());
+        } else {
+            Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortField).ascending()
+                    : Sort.by(sortField).descending();
+            pageable = PageRequest.of(page, size, sort);
+        }
+        return testScenarioRepository.findAll(TestScenarioSpecifications.hasSuiteId(suiteId), pageable);
     }
 
     @Transactional(readOnly = true)
-    public List<TestScenario> findByPriority(Short priority) {
-        return testScenarioRepository.findByPriority(priority);
+    public Page<TestScenario> findByPriority(Short priority, int page, int size, String sortField, String sortDir) {
+        Sort sort;
+        if (sortField == null || sortField.isEmpty() || sortDir == null || sortDir.isEmpty()) {
+            sort = Sort.unsorted();
+        } else {
+            sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+        }
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return testScenarioRepository.findAll(TestScenarioSpecifications.hasPriority(priority), pageable);
     }
 
     @Transactional(readOnly = true)
-    public List<TestScenario> findByTagNames(List<String> tagNames) {
-        return testScenarioRepository.findByTagNames(tagNames);
+    public Page<TestScenario> findByTagNames(Set<String> tagNames, int page, int size, String sortField,
+            String sortDir) {
+        Sort sort;
+        if (sortField == null || sortField.isEmpty() || sortDir == null || sortDir.isEmpty()) {
+            sort = Sort.unsorted();
+        } else {
+            sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+        }
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return testScenarioRepository.findDistinctByTags_NameIn(tagNames, pageable);
     }
 
     @Transactional(readOnly = true)
-    public List<TestScenario> searchScenarios(String searchTerm) {
-        return testScenarioRepository.findByNameOrDescriptionContaining(searchTerm);
+    public Page<TestScenario> searchScenariosInSuite(
+            Long suitId,
+            String keyword,
+            int page,
+            int size,
+            String sortField,
+            String sortDir) {
+        Sort sort;
+        if (sortField == null || sortField.isEmpty() || sortDir == null || sortDir.isEmpty()) {
+            sort = Sort.unsorted();
+        } else {
+            sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+        }
+        PageRequest pageable = PageRequest.of(page, size, sort);
+        Specification<TestScenario> spec = TestScenarioSpecifications.hasSuiteId(suitId)
+                .and(TestScenarioSpecifications.nameOrDescriptionContains(keyword));
+
+        return testScenarioRepository.findAll(spec, pageable);
     }
 
-    @Transactional(readOnly = true)
-    public List<TestScenario> searchScenariosInSuite(Long suiteId, String searchTerm) {
-        return testScenarioRepository.findBySuiteIdAndSearch(suiteId, searchTerm);
+    Boolean existsByNameAndTestSuite(String name, TestSuite testSuite) {
+        return testScenarioRepository.existsByNameAndTestSuite(name, testSuite);
     }
 }

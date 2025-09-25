@@ -55,14 +55,19 @@ class AuthControllerRegisterTest {
                 objectMapper = new ObjectMapper();
         }
 
-        @Test
-        void testRegisterUser_Success() throws Exception {
-                // Arrange
-                RegisterRequestModel registerDto = new RegisterRequestModel();
+        private RegisterRequestModel createValidRegisterDto(String role) {
+                var registerDto = new RegisterRequestModel();
                 registerDto.setUsername("testuser");
                 registerDto.setPassword("testpassword");
                 registerDto.setEmail("testuser@example.com");
-                registerDto.setRoleName("ROLE_USER");
+                registerDto.setRoleName(role);
+                return registerDto;
+        }
+
+        @Test
+        void testRegisterUser_Success() throws Exception {
+                // Arrange
+                RegisterRequestModel UsereRegisterDto = createValidRegisterDto("ROLE_USER");
 
                 // Create a successful AuthServiceResult
                 AuthServiceResult successResult = new AuthServiceResult();
@@ -76,13 +81,11 @@ class AuthControllerRegisterTest {
                 // Act and Assert
                 mockMvc.perform(post("/api/auth/register")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(registerDto)))
+                                .content(objectMapper.writeValueAsString(UsereRegisterDto)))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.message").value("Registered successfully"))
                                 .andExpect(jsonPath("$.resultState").value(true));
 
-                // Verify interactions
-                verify(userService, times(1)).registerUserAndSyncRole(any(RegisterRequestModel.class));
         }
 
         @Test

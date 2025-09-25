@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
             String message;
             switch (registerDto.getRoleName().toUpperCase()) {
                 case "ROLE_USER":
-                    message = "Registered as student";
+                    message = "Registered as User";
                     break;
                 case "ROLE_ADMIN":
                     isSynced = syncAdmin(user, registerDto);
