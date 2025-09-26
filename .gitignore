@@ -137,3 +137,8 @@ dmypy.json
 
 # FastAPI specific
 .pytest_cache
+
+# Environment files
+.env
+.env.local
+.env.*.local
