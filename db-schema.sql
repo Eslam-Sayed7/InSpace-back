@@ -7,7 +7,7 @@
 --            postgres
 
 -- Create the InSpaceDb Database
-CREATE DATABASE ;
+CREATE DATABASE InSpaceDb;
 
 -- Connect to the InSpaceDb Database
 \c InSpaceDb;
@@ -86,8 +86,9 @@ CREATE TABLE action_types (
 
 CREATE TABLE test_steps (
                             step_id SERIAL PRIMARY KEY,
-                            scenario_id INT NOT NULL REFERENCES test_scenarios(scenario_id) ON DELETE CASCADE,
+                            scenario_id INT NOT NULL REFERENCES test_scenarios(scenario_id) ON DELETE CASCADE,  -- this is the test_id in the contract
                             sequence_order INT NOT NULL,
+                            is_last_step BOOLEAN DEFAULT False,
                             action_type_id INT NOT NULL REFERENCES action_types(action_type_id),
                             selector TEXT,
                             input_value TEXT,
@@ -97,16 +98,72 @@ CREATE TABLE test_steps (
                             UNIQUE (scenario_id, sequence_order)
 );
 
+CREATE TABLE test_actions (
+    action_id SERIAL PRIMARY KEY,
+    step_id INT NOT NULL REFERENCES test_steps(step_id) ON DELETE CASCADE,
+
+    -- Basic action info
+    action_type VARCHAR(50) NOT NULL,
+    description TEXT,
+    execution_order INTEGER,
+
+    -- Verification settings
+    verify_immediately BOOLEAN DEFAULT false,
+    verification_type VARCHAR(50),
+
+    -- Target information (embedded in same table)
+    target_content TEXT,
+    target_type VARCHAR(50),
+
+    -- Target bounding box (embedded as JSON or separate columns)
+    target_bbox_x1 TEXT,
+    target_bbox_y1 TEXT,
+    target_bbox_x2 TEXT,
+    target_bbox_y2 TEXT,
+    
+    -- Expected content (stored as JSON array)
+    expected_content JSONB,  -- ["Search", "Maps"]
+    
+    -- Action parameters (embedded)
+    param_text TEXT,
+    param_clear_first BOOLEAN,
+    param_direction VARCHAR(20),
+    param_timeout INTEGER,
+    param_wait_time INTEGER,
+    param_url VARCHAR(1000),
+
+    -- Context data (stored as JSON)
+    context_data JSONB,  -- {"prompt": "...", "previous_reasoning": "..."}
+
+    created_at TIMESTAMP DEFAULT NOW()
+    Updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE batch_verifications (
+    batch_id SERIAL PRIMARY KEY,
+    action_id BIGINT NOT NULL REFERENCES test_actions(action_id) ON DELETE CASCADE, -- means that this verification would run after that action
+
+    -- Verification criteria
+    criteria_type VARCHAR(50) NOT NULL, -- 'text_present', 'element_visible', etc.
+    criteria_content VARCHAR(500) NOT NULL,
+
+    -- Status tracking
+    verification_status VARCHAR(20) DEFAULT 'pending', -- 'pending', 'passed', 'failed'
+    verified_at TIMESTAMP,
+
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
 CREATE TABLE test_executions (
                                  execution_id SERIAL PRIMARY KEY,
                                  scenario_id INT NOT NULL REFERENCES test_scenarios(scenario_id) ON DELETE CASCADE,
                                  step_id INT NOT NULL REFERENCES test_steps(step_id) ON DELETE CASCADE,
                                  run_identifier UUID NOT NULL, -- groups all steps from one run together
                                  status_id INT NOT NULL DEFAULT 1 REFERENCES execution_status(status_id);
-actual_output TEXT,
-    screenshot_url TEXT,
-    started_at TIMESTAMP DEFAULT NOW(),
-    finished_at TIMESTAMP
+                                 actual_output TEXT,
+                                 screenshot_url TEXT,
+                                 started_at TIMESTAMP DEFAULT NOW(),
+                                 finished_at TIMESTAMP
 );
 
 CREATE TABLE execution_status (
