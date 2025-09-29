@@ -14,6 +14,8 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
 
        Optional<Tag> findByNameIgnoreCase(String name);
 
+       Optional<Tag> findByName(String name);
+
        List<Tag> findByNameContainingIgnoreCase(String keyword);
 
        // Count scenarios using a specific tag
@@ -28,8 +30,11 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
 
        boolean existsByNameIgnoreCase(String name);
 
-       // Search tags by name pattern
-       List<Tag> findByNameStartingWithIgnoreCase(String prefix);
+       // Get most used tags
+       @Query("SELECT t FROM Tag t LEFT JOIN t.scenarios s GROUP BY t.tagId ORDER BY COUNT(s) DESC")
+       List<Tag> findMostUsedTags(@Param("limit") int limit);
 
-       List<Tag> findByNameEndingWithIgnoreCase(String suffix);
+       // Get unused tags
+       @Query("SELECT t FROM Tag t WHERE t.scenarios IS EMPTY")
+       List<Tag> findUnusedTags();
 }

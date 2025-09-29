@@ -26,6 +26,9 @@ public class TestStep {
     @NotNull(message = "Sequence order is required")
     private Integer sequenceOrder;
 
+    @Column(name = "is_last_step")
+    private Boolean isLastStep = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "action_type_id", nullable = false)
     @NotNull(message = "Action type is required")
@@ -87,6 +90,14 @@ public class TestStep {
 
     public void setSequenceOrder(Integer sequenceOrder) {
         this.sequenceOrder = sequenceOrder;
+    }
+
+    public Boolean getLastStep() {
+        return isLastStep;
+    }
+
+    public void setLastStep(Boolean lastStep) {
+        isLastStep = lastStep;
     }
 
     public ActionType getActionType() {

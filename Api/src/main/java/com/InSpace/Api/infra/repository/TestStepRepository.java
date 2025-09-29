@@ -1,5 +1,6 @@
 package com.InSpace.Api.infra.repository;
 
+import com.InSpace.Api.domain.ActionType;
 import com.InSpace.Api.domain.TestStep;
 import com.InSpace.Api.domain.TestScenario;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,7 +24,12 @@ public interface TestStepRepository extends JpaRepository<TestStep, Long>, JpaSp
     boolean existsByTestScenarioAndSequenceOrder(TestScenario testScenario, Integer sequenceOrder);
 
     @Query("SELECT MAX(t.sequenceOrder) FROM TestStep t WHERE t.testScenario = :scenario")
-    Optional<Integer> findMaxSequenceOrderByTestScenario(@Param("scenario") TestScenario testScenario);
+    Integer findMaxSequenceOrderByTestScenario(@Param("scenario") TestScenario testScenario);
 
     long countByTestScenario(TestScenario testScenario);
+
+    // Missing methods used in TestStepService
+    List<TestStep> findByActionType(ActionType actionType);
+
+    Optional<TestStep> findFirstByTestScenarioOrderBySequenceOrderDesc(TestScenario testScenario);
 }
