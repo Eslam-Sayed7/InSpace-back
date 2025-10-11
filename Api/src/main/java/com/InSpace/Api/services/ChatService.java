@@ -2,6 +2,7 @@ package com.InSpace.Api.services;
 
 import com.InSpace.Api.domain.ChatConversation;
 import com.InSpace.Api.domain.ChatMessage;
+import com.InSpace.Api.services.dto.mappers.ChatMessageMapper;
 import com.InSpace.Api.infra.repository.ChatConversationRepository;
 import com.InSpace.Api.infra.repository.ChatMessageRepository;
 import com.InSpace.Api.services.dto.Chat.ChatConversationResponse;
@@ -37,8 +38,13 @@ public class ChatService {
         ChatConversation conversation = chatConversationRepository.findById(conversationId)
                 .orElseThrow(() -> new IllegalArgumentException("Conversation with ID " + conversationId + " not found"));
 
-        int nextSequenceOrder = conversation.getMessages().size();
-
+        int nextSequenceOrder = 0;
+        if (conversation.getMessages() != null && !conversation.getMessages().isEmpty()) {
+            nextSequenceOrder = conversation.getMessages().stream()
+                    .mapToInt(ChatMessage::getSequenceOrder)
+                    .max()
+                    .orElse(0) + 1;
+        }
         ChatMessage message = new ChatMessage(conversation, content, nextSequenceOrder);
         ChatMessage savedMessage = chatMessageRepository.save(message);
 
@@ -77,13 +83,10 @@ public class ChatService {
         chatConversationRepository.deleteById(conversationId);
     }
 
-    private ChatConversationResponse toResponse(ChatConversation conversation) {
-        List<ChatMessageDTO> messageDTOs = conversation.getMessages().stream()
-                .map(msg -> new ChatMessageDTO(
-                msg.getMessageId(),
-                msg.getContent(),
-                msg.getSequenceOrder(),
-                msg.getCreatedAt()))
+    public ChatConversationResponse toResponse(ChatConversation conversation) {
+        List<ChatMessageDTO> messageDTOs = conversation.getMessages()
+                .stream()
+                .map(ChatMessageMapper::toDto)
                 .collect(Collectors.toList());
 
         return new ChatConversationResponse(
