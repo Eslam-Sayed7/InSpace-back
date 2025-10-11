@@ -1,4 +1,4 @@
-package com.InSpace.Api.services.dto.mapperes;
+package com.InSpace.Api.services.dto.mappers;
 
 import com.InSpace.Api.domain.TestScenario;
 import com.InSpace.Api.domain.Tag;

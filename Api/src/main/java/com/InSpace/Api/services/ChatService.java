@@ -37,7 +37,6 @@ public class ChatService {
         ChatConversation conversation = chatConversationRepository.findById(conversationId)
                 .orElseThrow(() -> new IllegalArgumentException("Conversation with ID " + conversationId + " not found"));
 
-        // Get the next sequence order
         int nextSequenceOrder = conversation.getMessages().size();
 
         ChatMessage message = new ChatMessage(conversation, content, nextSequenceOrder);
