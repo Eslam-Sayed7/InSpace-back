@@ -5,7 +5,7 @@ import com.InSpace.Api.services.TestScenarioService;
 import com.InSpace.Api.services.dto.ErrorResponse;
 import com.InSpace.Api.services.dto.TestScenario.Requests.CreateTestScenarioRequest;
 import com.InSpace.Api.services.dto.TestScenario.Response.TestScenarioDTO;
-import com.InSpace.Api.services.dto.mapperes.TestScenarioMapper;
+import com.InSpace.Api.services.dto.mappers.TestScenarioMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
