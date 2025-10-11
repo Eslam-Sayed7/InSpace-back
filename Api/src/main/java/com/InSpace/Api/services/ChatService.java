@@ -22,8 +22,8 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
 
     @Autowired
-    public ChatService(ChatConversationRepository chatConversationRepository, 
-                      ChatMessageRepository chatMessageRepository) {
+    public ChatService(ChatConversationRepository chatConversationRepository,
+            ChatMessageRepository chatMessageRepository) {
         this.chatConversationRepository = chatConversationRepository;
         this.chatMessageRepository = chatMessageRepository;
     }
@@ -33,19 +33,19 @@ public class ChatService {
         return chatConversationRepository.save(conversation);
     }
 
-    public ChatMessage addMessage(Long conversationId, String content, String role) {
+    public ChatMessage addMessage(Long conversationId, String content) {
         ChatConversation conversation = chatConversationRepository.findById(conversationId)
                 .orElseThrow(() -> new IllegalArgumentException("Conversation with ID " + conversationId + " not found"));
 
         // Get the next sequence order
         int nextSequenceOrder = conversation.getMessages().size();
 
-        ChatMessage message = new ChatMessage(conversation, content, role, nextSequenceOrder);
+        ChatMessage message = new ChatMessage(conversation, content, nextSequenceOrder);
         ChatMessage savedMessage = chatMessageRepository.save(message);
-        
+
         conversation.addMessage(savedMessage);
         chatConversationRepository.save(conversation);
-        
+
         return savedMessage;
     }
 
@@ -81,12 +81,10 @@ public class ChatService {
     private ChatConversationResponse toResponse(ChatConversation conversation) {
         List<ChatMessageDTO> messageDTOs = conversation.getMessages().stream()
                 .map(msg -> new ChatMessageDTO(
-                        msg.getMessageId(),
-                        msg.getContent(),
-                        msg.getRole(),
-                        msg.getSequenceOrder(),
-                        msg.getCreatedAt()
-                ))
+                msg.getMessageId(),
+                msg.getContent(),
+                msg.getSequenceOrder(),
+                msg.getCreatedAt()))
                 .collect(Collectors.toList());
 
         return new ChatConversationResponse(
@@ -95,7 +93,6 @@ public class ChatService {
                 conversation.getTitle(),
                 conversation.getCreatedAt(),
                 conversation.getUpdatedAt(),
-                messageDTOs
-        );
+                messageDTOs);
     }
 }

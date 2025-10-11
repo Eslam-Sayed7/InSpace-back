@@ -11,16 +11,12 @@ public class AddChatMessageRequest {
     @NotBlank(message = "Content is required")
     private String content;
 
-    @NotBlank(message = "Role is required")
-    private String role; // "user" or "assistant"
-
     public AddChatMessageRequest() {
     }
 
-    public AddChatMessageRequest(Long conversationId, String content, String role) {
+    public AddChatMessageRequest(Long conversationId, String content) {
         this.conversationId = conversationId;
         this.content = content;
-        this.role = role;
     }
 
     public Long getConversationId() {
@@ -37,13 +33,5 @@ public class AddChatMessageRequest {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
     }
 }

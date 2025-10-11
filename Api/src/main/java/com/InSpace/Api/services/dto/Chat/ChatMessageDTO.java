@@ -6,17 +6,15 @@ public class ChatMessageDTO {
 
     private Long messageId;
     private String content;
-    private String role;
     private Integer sequenceOrder;
     private LocalDateTime createdAt;
 
     public ChatMessageDTO() {
     }
 
-    public ChatMessageDTO(Long messageId, String content, String role, Integer sequenceOrder, LocalDateTime createdAt) {
+    public ChatMessageDTO(Long messageId, String content, Integer sequenceOrder, LocalDateTime createdAt) {
         this.messageId = messageId;
         this.content = content;
-        this.role = role;
         this.sequenceOrder = sequenceOrder;
         this.createdAt = createdAt;
     }
@@ -35,14 +33,6 @@ public class ChatMessageDTO {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
     }
 
     public Integer getSequenceOrder() {

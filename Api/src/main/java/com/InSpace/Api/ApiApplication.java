@@ -16,19 +16,17 @@ public class ApiApplication {
 
 	public static void main(String[] args) {
 		SpringApplication app = new SpringApplication(ApiApplication.class);
-		// app.addListeners((ApplicationListener<ApplicationEnvironmentPreparedEvent>)
-		// event -> {
-		// System.out.println(">>> Property sources: " +
-		// event.getEnvironment().getPropertySources());
-		// String dbName = event.getEnvironment().getProperty("DB_NAME");
-		// String dbUserName = event.getEnvironment().getProperty("DB_USERNAME");
-		// String dbPassword = event.getEnvironment().getProperty("DB_PASSWORD");
-		// String dbDriver = event.getEnvironment().getProperty("DB_DRIVER");
-		// System.out.println(">>> DB_NAME resolved by Spring = " + dbName);
-		// System.out.println(">>> DB_USERNAME resolved by Spring = " + dbUserName);
-		// System.out.println(">>> DB_PASSWORD resolved by Spring = " + dbPassword);
-		// System.out.println(">>> DB_DRIVER resolved by Spring = " + dbDriver);
-		// });
+		app.addListeners((ApplicationListener<ApplicationEnvironmentPreparedEvent>)
+		event -> {
+		System.out.println(">>> Property sources: " +
+		event.getEnvironment().getPropertySources());
+		String dbName = event.getEnvironment().getProperty("DB_NAME");
+		String dbUserName = event.getEnvironment().getProperty("DB_USERNAME");
+		String dbPassword = event.getEnvironment().getProperty("DB_PASSWORD");
+		System.out.println(">>> DB_NAME resolved by Spring = " + dbName);
+		System.out.println(">>> DB_USERNAME resolved by Spring = " + dbUserName);
+		System.out.println(">>> DB_PASSWORD resolved by Spring = " + dbPassword);
+		});
 		app.run(args);
 	}
 

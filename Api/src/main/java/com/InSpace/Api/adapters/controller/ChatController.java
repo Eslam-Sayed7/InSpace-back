@@ -46,9 +46,7 @@ public class ChatController {
         try {
             ChatMessage message = chatService.addMessage(
                     request.getConversationId(),
-                    request.getContent(),
-                    request.getRole()
-            );
+                    request.getContent());
             return ResponseEntity.status(HttpStatus.CREATED).body(message);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

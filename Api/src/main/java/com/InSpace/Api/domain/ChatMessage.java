@@ -21,9 +21,6 @@ public class ChatMessage {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "role", nullable = false, length = 50)
-    private String role; // "user" or "assistant"
-
     @Column(name = "sequence_order", nullable = false)
     private Integer sequenceOrder;
 
@@ -31,19 +28,14 @@ public class ChatMessage {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    // Constructors
-
     public ChatMessage() {
     }
 
-    public ChatMessage(ChatConversation conversation, String content, String role, Integer sequenceOrder) {
+    public ChatMessage(ChatConversation conversation, String content, Integer sequenceOrder) {
         this.conversation = conversation;
         this.content = content;
-        this.role = role;
         this.sequenceOrder = sequenceOrder;
     }
-
-    // Getters and Setters
 
     public Long getMessageId() {
         return messageId;
@@ -69,14 +61,6 @@ public class ChatMessage {
         this.content = content;
     }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
     public Integer getSequenceOrder() {
         return sequenceOrder;
     }
@@ -95,12 +79,11 @@ public class ChatMessage {
 
     @Override
     public String toString() {
-        return "ChatMessage{" +
-                "messageId=" + messageId +
-                ", content='" + content + '\'' +
-                ", role='" + role + '\'' +
-                ", sequenceOrder=" + sequenceOrder +
-                ", createdAt=" + createdAt +
-                '}';
+        return "ChatMessage{"
+                + "messageId=" + messageId
+                + ", content='" + content + '\''
+                + ", sequenceOrder=" + sequenceOrder
+                + ", createdAt=" + createdAt
+                + '}';
     }
 }
