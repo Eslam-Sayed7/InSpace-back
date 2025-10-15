@@ -1,0 +1,59 @@
+name: InSpace API CI
+
+on:
+  push:
+    branches: [ main, feature/CI-CD ]
+    paths: [ 'Api/**' ]
+  pull_request:
+    branches: [ main ]
+    paths: [ 'Api/**' ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Api
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_DB: inspace_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v5
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Cache Maven dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: Run tests
+      run: ./mvnw clean test
+      env:
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_NAME: inspace_test
+        DB_USERNAME: postgres
+        DB_PASSWORD: postgres
+        JWT_SECRET: test-jwt-secret-key-for-testing-purposes-minimum-32-characters-long
+        JWT_EXPIRATION: 86400000
