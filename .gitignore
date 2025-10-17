@@ -6,7 +6,7 @@ Api/target/
 /logs/
 *.log
 Api/.env
-
+Api/.env.prod
 # Gradle
 .gradle/
 /build/
