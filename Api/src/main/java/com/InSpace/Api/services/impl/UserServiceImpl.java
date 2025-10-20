@@ -1,10 +1,7 @@
 package com.InSpace.Api.services.impl;
 
-import com.InSpace.Api.config.Security.JWTGenerator;
-import com.InSpace.Api.domain.*;
-import com.InSpace.Api.infra.repository.*;
-import com.InSpace.Api.services.UserService;
-import com.InSpace.Api.services.dto.Auth.*;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,7 +11,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import com.InSpace.Api.config.Security.JWTGenerator;
+import com.InSpace.Api.domain.Admin;
+import com.InSpace.Api.domain.Role;
+import com.InSpace.Api.domain.User;
+import com.InSpace.Api.infra.repository.AdminRepository;
+import com.InSpace.Api.infra.repository.RoleRepository;
+import com.InSpace.Api.infra.repository.UserRepository;
+import com.InSpace.Api.services.UserService;
+import com.InSpace.Api.services.dto.Auth.AccountReMailModel;
+import com.InSpace.Api.services.dto.Auth.AccountRePasswordModel;
+import com.InSpace.Api.services.dto.Auth.AccountReUsernameModel;
+import com.InSpace.Api.services.dto.Auth.AccountResponse;
+import com.InSpace.Api.services.dto.Auth.AuthServiceResult;
+import com.InSpace.Api.services.dto.Auth.RegisterRequestModel;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -217,5 +227,11 @@ public class UserServiceImpl implements UserService {
             System.err.println("Error syncing admin: " + e.getMessage());
             return false;
         }
+    }
+
+    public Long getUserIdFromUsername(String username) {
+        return userRepository.findByUsername(username)
+                .map(User::getUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 }
