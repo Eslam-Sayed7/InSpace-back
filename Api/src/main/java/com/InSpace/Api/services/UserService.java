@@ -1,6 +1,11 @@
 package com.InSpace.Api.services;
 
-import com.InSpace.Api.services.dto.Auth.*;
+import com.InSpace.Api.services.dto.Auth.AccountReMailModel;
+import com.InSpace.Api.services.dto.Auth.AccountRePasswordModel;
+import com.InSpace.Api.services.dto.Auth.AccountReUsernameModel;
+import com.InSpace.Api.services.dto.Auth.AccountResponse;
+import com.InSpace.Api.services.dto.Auth.AuthServiceResult;
+import com.InSpace.Api.services.dto.Auth.RegisterRequestModel;
 
 public interface UserService {
     AuthServiceResult registerUserAndSyncRole(RegisterRequestModel registerRequestModel);
@@ -11,4 +16,7 @@ public interface UserService {
     AccountResponse changeMail(AccountReMailModel changeMailRequestModel);
 
     AccountResponse changeUsername(AccountReUsernameModel changeUserNameRequestModel);
+
+    Long getUserIdFromUsername(String username);
+
 }

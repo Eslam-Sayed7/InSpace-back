@@ -1,5 +1,5 @@
-INSERT INTO roles (role_id, role_name) VALUES (1, 'ROLE_ADMIN');
-INSERT INTO roles (role_id, role_name) VALUES (2, 'ROLE_USER');
+INSERT INTO roles (role_id, role_name) VALUES (1, 'ROLE_ADMIN') ON CONFLICT (role_id) DO NOTHING;
+INSERT INTO roles (role_id, role_name) VALUES (2, 'ROLE_USER') ON CONFLICT (role_id) DO NOTHING;
 
 INSERT INTO execution_status (name, description) VALUES
 ('pending', 'Execution has not started yet'),
@@ -7,8 +7,8 @@ INSERT INTO execution_status (name, description) VALUES
 ('passed', 'Step executed successfully'),
 ('failed', 'Step failed to meet the expected outcome'),
 ('error', 'An unexpected error occurred'),
-('skipped', 'Step was skipped in this run');
-
+('skipped', 'Step was skipped in this run')
+ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO action_types (name, description) VALUES
 ('click', 'Click on an element'),
@@ -20,4 +20,5 @@ INSERT INTO action_types (name, description) VALUES
 ('select', 'Select an option from a dropdown'),
 ('hover', 'Hover over an element'),
 ('scroll', 'Scroll to an element or position'),
-('submit', 'Submit a form');
+('submit', 'Submit a form')
+ON CONFLICT (name) DO NOTHING;
