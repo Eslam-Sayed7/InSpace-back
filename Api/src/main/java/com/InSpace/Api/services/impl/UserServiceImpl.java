@@ -11,20 +11,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.InSpace.Api.config.Security.JWTGenerator;
 import com.InSpace.Api.domain.Admin;
 import com.InSpace.Api.domain.Role;
+import com.InSpace.Api.domain.Token;
 import com.InSpace.Api.domain.User;
+import com.InSpace.Api.domain.enums.TokenType;
 import com.InSpace.Api.infra.repository.AdminRepository;
 import com.InSpace.Api.infra.repository.RoleRepository;
 import com.InSpace.Api.infra.repository.UserRepository;
+import com.InSpace.Api.infra.repository.TokenRepository;
 import com.InSpace.Api.services.UserService;
-import com.InSpace.Api.services.dto.Auth.AccountReMailModel;
-import com.InSpace.Api.services.dto.Auth.AccountRePasswordModel;
-import com.InSpace.Api.services.dto.Auth.AccountReUsernameModel;
-import com.InSpace.Api.services.dto.Auth.AccountResponse;
-import com.InSpace.Api.services.dto.Auth.AuthServiceResult;
-import com.InSpace.Api.services.dto.Auth.RegisterRequestModel;
+import com.InSpace.Api.config.Security.JWTGenerator;
+import com.InSpace.Api.services.dto.Auth.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -35,20 +33,23 @@ public class UserServiceImpl implements UserService {
     private final AdminRepository adminRepository;
     private final AuthenticationManager authenticationManager;
     private final JWTGenerator jwtGenerator;
+    private final TokenRepository tokenRepository;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
             PasswordEncoder passwordEncoder,
-            AdminRepository adminRepository, AuthenticationManager authenticationManager, JWTGenerator jwtGenerator) {
+            AdminRepository adminRepository, AuthenticationManager authenticationManager, JWTGenerator jwtGenerator, TokenRepository tokenRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.adminRepository = adminRepository;
         this.authenticationManager = authenticationManager;
         this.jwtGenerator = jwtGenerator;
+        this.tokenRepository = tokenRepository;
     }
 
     @Transactional
+    @Override
     public AuthServiceResult registerUserAndSyncRole(RegisterRequestModel registerDto) {
         var result = new AuthServiceResult();
         try {
@@ -80,15 +81,12 @@ public class UserServiceImpl implements UserService {
             boolean isSynced = false;
             String message;
             switch (registerDto.getRoleName().toUpperCase()) {
-                case "ROLE_USER":
-                    message = "Registered as User";
-                    break;
-                case "ROLE_ADMIN":
-                    isSynced = syncAdmin(user, registerDto);
+                case "ROLE_USER" -> message = "Registered as User";
+                case "ROLE_ADMIN" -> {
+                    isSynced = syncAdmin(user);
                     message = "Registered as Admin";
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unsupported role type!");
+                }
+                default -> throw new IllegalArgumentException("Unsupported role type!");
             }
             result.setMessage(message);
             result.setResultState(isSynced);
@@ -187,6 +185,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Transactional
+    @Override
     public AccountResponse changeMail(AccountReMailModel accountData) {
         // Step 2: Authenticate password
         String username = jwtGenerator.getUsernameFromJWT(accountData.getToken());
@@ -216,7 +215,7 @@ public class UserServiceImpl implements UserService {
         return result;
     }
 
-    private boolean syncAdmin(User user, RegisterRequestModel registerDto) {
+    private boolean syncAdmin(User user) {
         try {
             Admin admin = new Admin();
             admin.setUser(user);
@@ -234,4 +233,48 @@ public class UserServiceImpl implements UserService {
                 .map(User::getUserId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
+
+	@Override
+	public LoginResponse loginUser(LoginRequestModel loginDto) {
+
+        Authentication authentication = authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(
+            loginDto.getUsername(),
+            loginDto.getPassword()
+          ));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = jwtGenerator.generateToken(authentication);
+
+        var usr = userRepository.findById(getUserIdFromUsername(loginDto.getUsername()));
+        revokeAllUserTokens(usr.get()); // keep only one valid token
+        saveUserToken(usr.get(), token);
+
+        var loginResponse = new LoginResponse(token);
+        loginResponse.setMessage("login successfully");
+        loginResponse.setState(true);
+        
+        return loginResponse;
+	}
+
+    private void saveUserToken(User user, String jwtToken) {
+        var toSaveToken = Token.builder()
+            .user(user)
+            .token(jwtToken)
+            .tokenType(TokenType.BEARER)
+            .revoked(false)
+            .expired(false)
+            .build();
+        tokenRepository.save(toSaveToken);
+    }
+
+    private void revokeAllUserTokens(User user) {
+        var validUserTokens = tokenRepository.findAllValidTokensByUser(user.getUserId());
+        if (validUserTokens.isEmpty())
+            return;
+        for (var token : validUserTokens) {
+            token.setExpired(true);
+            token.setRevoked(true);
+        }
+        tokenRepository.saveAll(validUserTokens);
+    } 
 }

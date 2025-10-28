@@ -1,6 +1,5 @@
 package com.InSpace.Api.adapters.controller;
 
-import com.InSpace.Api.config.Security.JWTGenerator;
 import com.InSpace.Api.infra.repository.RoleRepository;
 import com.InSpace.Api.infra.repository.UserRepository;
 // import com.InSpace.Api.services.EmailService;
@@ -10,14 +9,11 @@ import com.InSpace.Api.services.dto.Auth.LoginRequestModel;
 import com.InSpace.Api.services.dto.Auth.RegisterRequestModel;
 import com.InSpace.Api.services.dto.Auth.LoginResponse;
 import com.InSpace.Api.services.dto.Email.EmailFormateDto;
+
 import jakarta.annotation.security.PermitAll;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,17 +27,12 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JWTGenerator jwtGenerator;
     // private final EmailService emailService;
     private final UserService userService;
 
     @Autowired
-    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
-            RoleRepository roleRepository, PasswordEncoder passwordEncoder,
-            JWTGenerator jwtGenerator, UserService userService) {
-        this.authenticationManager = authenticationManager;
-        this.jwtGenerator = jwtGenerator;
+    public AuthController(UserRepository userRepository,
+            RoleRepository roleRepository, PasswordEncoder passwordEncoder,UserService userService) {
         this.userService = userService;
     }
 
@@ -57,14 +48,11 @@ public class AuthController {
         }
 
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginDto.getUsername(),
-                            loginDto.getPassword()));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String token = jwtGenerator.generateToken(authentication);
 
-            return new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK);
+            var result = userService.loginUser(loginDto);
+
+            return new ResponseEntity<>(result, HttpStatus.OK);
+
         } catch (Exception e) {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Wrong Credentials");
@@ -80,12 +68,13 @@ public class AuthController {
         try {
             result = userService.registerUserAndSyncRole(registerDto);
             if (result.isResultState()) {
-                // uncomment if you have the right yml file with the service crendtial
+                
                 var email = new EmailFormateDto();
                 email.setTo(registerDto.getEmail());
                 email.setSubject("Registration");
                 email.setEmailBody("You have successfully registered");
-                // emailService.sendEmail(email);
+                // emailService.sendEmail(email); // uncomment if you have the right yml file with the email service crendtial
+
                 result.setMessage("Registered successfully");
                 return new ResponseEntity<AuthServiceResult>(result, HttpStatus.OK);
             }

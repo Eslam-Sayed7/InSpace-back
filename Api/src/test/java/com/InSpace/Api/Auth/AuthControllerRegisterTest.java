@@ -32,11 +32,9 @@ class AuthControllerRegisterTest {
         // private EmailService emailService;
         private AuthController authController;
         private ObjectMapper objectMapper;
-        private AuthenticationManager authenticationManager;
         private UserRepository userRepository;
         private RoleRepository roleRepository;
         private PasswordEncoder passwordEncoder;
-        private JWTGenerator jwtGenerator;
 
         @BeforeEach
         void setUp() {
@@ -45,8 +43,8 @@ class AuthControllerRegisterTest {
                 // emailService = mock(EmailService.class);
 
                 // Create the controller with mock services
-                authController = new AuthController(authenticationManager, userRepository,
-                                roleRepository, passwordEncoder, jwtGenerator, userService);
+                authController = new AuthController(userRepository,
+                                roleRepository, passwordEncoder,userService);
 
                 // Setup MockMvc
                 mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
