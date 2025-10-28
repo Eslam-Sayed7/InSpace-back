@@ -235,7 +235,7 @@ public class UserServiceImpl implements UserService {
     }
 
 	@Override
-	public LoginResponse loginUser(LoginRequestModel loginDto) {
+	public AuthServiceResult loginUser(LoginRequestModel loginDto) {
 
         Authentication authentication = authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(
@@ -249,11 +249,12 @@ public class UserServiceImpl implements UserService {
         revokeAllUserTokens(usr.get()); // keep only one valid token
         saveUserToken(usr.get(), token);
 
-        var loginResponse = new LoginResponse(token);
-        loginResponse.setMessage("login successfully");
-        loginResponse.setState(true);
-        
-        return loginResponse;
+        var authServiceResult = new AuthServiceResult();
+        authServiceResult.setMessage("login successfully");
+        authServiceResult.setResultState(true);
+        authServiceResult.setToken(token);
+
+        return authServiceResult;
 	}
 
     private void saveUserToken(User user, String jwtToken) {

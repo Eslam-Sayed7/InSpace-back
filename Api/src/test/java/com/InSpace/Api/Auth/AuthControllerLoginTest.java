@@ -6,19 +6,14 @@ import com.InSpace.Api.infra.repository.RoleRepository;
 import com.InSpace.Api.infra.repository.UserRepository;
 import com.InSpace.Api.services.EmailService;
 import com.InSpace.Api.services.UserService;
+import com.InSpace.Api.services.dto.Auth.AuthServiceResult;
 import com.InSpace.Api.services.dto.Auth.LoginRequestModel;
-import com.InSpace.Api.services.dto.Auth.LoginResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -57,23 +52,23 @@ class AuthControllerLoginTest {
         LoginRequestModel loginRequest = new LoginRequestModel();
         loginRequest.setUsername("testuser");
         loginRequest.setPassword("password123");
+    // Stub the service used by the controller
+    AuthServiceResult authServiceResult = new AuthServiceResult();
+    authServiceResult.setMessage("login successfully");
+    authServiceResult.setResultState(true);
+    authServiceResult.setToken("test-token");
 
-        Authentication authentication = mock(Authentication.class);
-
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(authentication);
-        when(jwtGenerator.generateToken(authentication)).thenReturn("test-token");
+    when(userService.loginUser(any(LoginRequestModel.class))).thenReturn(authServiceResult);
 
         // Act
-        ResponseEntity<LoginResponse> response = authController.login(loginRequest);
+        var response = authController.login(loginRequest);
 
-        // Assert
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals("test-token", response.getBody().getToken());
+    // Assert
+    assertEquals(200, response.getStatusCode().value());
+    AuthServiceResult body = (AuthServiceResult) response.getBody();
+    assertEquals("test-token", body.getToken());
 
-        verify(authenticationManager, times(1))
-                .authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(jwtGenerator, times(1)).generateToken(authentication);
+    verify(userService, times(1)).loginUser(any(LoginRequestModel.class));
     }
 
     @Test
@@ -82,18 +77,17 @@ class AuthControllerLoginTest {
         LoginRequestModel loginRequest = new LoginRequestModel();
         loginRequest.setUsername("");
         loginRequest.setPassword("");
-
         // Act
-        ResponseEntity<?> response = authController.login(loginRequest);
+        var response = authController.login(loginRequest);
 
         // Assert
-        assertEquals(400, response.getStatusCodeValue());
-        Map<String, String> responseBody = (Map<String, String>) response.getBody();
-        String errorMessage = responseBody.get("error");
+        assertEquals(400, response.getStatusCode().value());
+        var responseBody = (AuthServiceResult) response.getBody();
+        String errorMessage = responseBody.getMessage();
 
         assertEquals("Missing Credentials", errorMessage);
 
-        verifyNoInteractions(authenticationManager, jwtGenerator);
+        verifyNoInteractions(userService, authenticationManager, jwtGenerator);
     }
 
     @Test
@@ -102,22 +96,20 @@ class AuthControllerLoginTest {
         LoginRequestModel loginRequest = new LoginRequestModel();
         loginRequest.setUsername("wronguser");
         loginRequest.setPassword("wrongpassword");
+    when(userService.loginUser(any(LoginRequestModel.class)))
+        .thenThrow(new RuntimeException("Authentication failed"));
 
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenThrow(new RuntimeException("Authentication failed"));
+    // Act
+    var response = authController.login(loginRequest);
 
-        // Act
-        ResponseEntity<?> response = authController.login(loginRequest);
+    // Assert
+    assertEquals(400, response.getStatusCode().value());
+    var responseBody =  response.getBody();
+    String errorMessage = responseBody.getMessage();
 
-        // Assert
-        assertEquals(400, response.getStatusCodeValue());
-        Map<String, String> responseBody = (Map<String, String>) response.getBody();
-        String errorMessage = responseBody.get("error");
+    assertEquals("Wrong Credentials", errorMessage);
 
-        assertEquals("Wrong Credentials", errorMessage);
-
-        verify(authenticationManager, times(1))
-                .authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verifyNoInteractions(jwtGenerator);
+    verify(userService, times(1)).loginUser(any(LoginRequestModel.class));
+    verifyNoInteractions(jwtGenerator, authenticationManager);
     }
 }
