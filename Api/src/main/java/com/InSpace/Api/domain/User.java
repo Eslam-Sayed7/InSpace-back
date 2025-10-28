@@ -3,6 +3,7 @@ package com.InSpace.Api.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -44,7 +45,8 @@ public class User {
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
-    // Getters and Setters
+    @OneToMany(mappedBy = "user")
+    private List<Token> tokens;
 
     public Long getUserId() {
         return userId;
