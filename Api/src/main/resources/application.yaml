@@ -32,6 +32,15 @@ spring:
   profiles:
     active: dev
 
+  ai:
+    openai:
+      api-key: ${OPENAI_KEY}
+    # Map schema keys  to schema file names (without .json) under resources/schemas/
+    # Example:
+    # schemas:
+    #   userProfile: user_profile
+    #   order: order_schema
+
 server:
   port: 8080
 
