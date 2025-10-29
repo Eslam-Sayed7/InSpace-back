@@ -16,7 +16,7 @@ import reactor.core.publisher.Flux;
 import com.InSpace.Api.services.dto.ai.GenerateResponse;
 
 @RestController
-@RequestMapping("/ai")
+@RequestMapping("/api/ai")
 public class AiController {
 
     private final AiService aiService;
@@ -28,7 +28,7 @@ public class AiController {
     }
 
     @PostMapping("/generate")
-    public ResponseEntity<GenerateResponse> generate(
+    public ResponseEntity<?> generate(
         @RequestBody(required = false) GenerateRequest request) {
 
         if (request == null || request.getMessage() == null || request.getMessage().isEmpty()) {
@@ -40,8 +40,7 @@ public class AiController {
             return buildErrorResponse("AI service returned no result", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        var success = GenerateResponse.builder().generation(aiResult).build();
-        return ResponseEntity.ok(success);
+        return ResponseEntity.ok(aiResult);
     }
 
     @PostMapping("/generateStream")

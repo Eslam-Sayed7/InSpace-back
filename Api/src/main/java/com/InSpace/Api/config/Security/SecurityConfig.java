@@ -56,7 +56,7 @@ public class SecurityConfig {
                             (request, response, authentication) -> 
                             SecurityContextHolder.clearContext()
                         )
-                        )
+                )
                 .build();
     }
 

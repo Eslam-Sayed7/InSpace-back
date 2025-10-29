@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 
 import reactor.core.publisher.Flux;
 
-import com.InSpace.Api.config.AiProperties;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +18,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import com.InSpace.Api.config.Ai.AiProperties;
 import com.InSpace.Api.services.AiService;
 
 @Service
@@ -34,8 +33,10 @@ public class AiServiceimpl implements AiService {
         this.aiProperties = aiProperties;
     }
 
-    public String chat(String message) {
-        return chatModel.call(message);
+    @Override
+    public ChatResponse chat(String message) {
+        Prompt prompt = new Prompt(message);
+        return chatModel.call(prompt);
     }
 
     @Override
