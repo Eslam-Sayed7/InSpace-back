@@ -9,6 +9,7 @@ import com.InSpace.Api.infra.repository.ChatMessageRepository;
 import com.InSpace.Api.infra.repository.ChatRepository;
 import com.InSpace.Api.infra.repository.PromptRepository;
 import com.InSpace.Api.services.AiService;
+import com.InSpace.Api.services.util.AIResponseExtractor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,7 +62,9 @@ public class ChatAgent {
         String content = userMessage.getContent();
         org.springframework.ai.chat.model.ChatResponse modelResp = aiService.chat(content);
 
-        String reply = modelResp == null ? "" : modelResp.toString();
+        String raw = modelResp == null ? null : modelResp.toString();
+        String reply = AIResponseExtractor.extractTextContent(raw);
+        if (reply == null) reply = raw == null ? "" : raw;
 
         ChatMessage aiMessage = ChatMessage.builder()
                 .chat(userMessage.getChat())
@@ -93,10 +96,11 @@ public class ChatAgent {
         prompt = promptRepository.save(prompt);
 
         // TODO AiServiceimpl has schema-aware methods if needed
-        org.springframework.ai.chat.model.ChatResponse modelResp = aiService.chat(prompt.getContent());
+    org.springframework.ai.chat.model.ChatResponse modelResp = aiService.chat(prompt.getContent());
 
-        String reply = modelResp == null ? "" : modelResp.toString();
-        String rawJson = modelResp == null ? null : modelResp.toString();
+    String rawJson = modelResp == null ? null : modelResp.toString();
+    String reply = AIResponseExtractor.extractTextContent(rawJson);
+    if (reply == null) reply = rawJson == null ? "" : rawJson;
 
         // persist AI chat message
         ChatMessage aiMessage = ChatMessage.builder()
