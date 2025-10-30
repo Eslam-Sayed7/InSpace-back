@@ -34,9 +34,6 @@ public class ChatController {
         return userService.getUserIdFromUsername(username);
     }
 
-    /**
-     * Create a new chat session (group chat with AI model).
-     */
     @PostMapping("/create")
     public ResponseEntity<ChatResponse> createChat(@RequestBody CreateChatRequest request) {
         try {
@@ -50,9 +47,7 @@ public class ChatController {
         }
     }
 
-    /**
-     * Send a message to the chat (user message).
-     */
+    
     @PostMapping("/message")
     public ResponseEntity<ChatMessageResponse> sendMessage(@RequestBody SendMessageRequest request) {
         try {
@@ -66,30 +61,7 @@ public class ChatController {
         }
     }
 
-    /**
-     * Append an AI model response to the chat.
-     * This endpoint can be called after getting a response from your AI model.
-     */
-    // @PostMapping("/{chatId}/model-response")
-    // public ResponseEntity<ChatMessageResponse> appendModelMessage(
-    //         @PathVariable Long chatId,
-    //         @RequestBody String content) {
-    //     try {
-    //         Long currentUserId = getCurrentUserId();
-    //         // Verify user has access to this chat
-    //         chatService.getChatById(chatId, currentUserId);
-    //         ChatMessageResponse response = chatService.appendModelMessage(chatId, content);
-    //         return new ResponseEntity<>(response, HttpStatus.CREATED);
-    //     } catch (IllegalArgumentException e) {
-    //         return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
-    //     } catch (Exception e) {
-    //         return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-    //     }
-    // }
-
-    /**
-     * Get all chats the user is a participant in.
-     */
+    
     @GetMapping("/list")
     public ResponseEntity<List<ChatResponse>> getUserChats() {
         try {
@@ -101,9 +73,6 @@ public class ChatController {
         }
     }
 
-    /**
-     * Get chat details by ID (only if user is a participant).
-     */
     @GetMapping("/{chatId}")
     public ResponseEntity<ChatResponse> getChatById(@PathVariable Long chatId) {
         try {
@@ -117,32 +86,6 @@ public class ChatController {
         }
     }
 
-    /**
-     * Get all messages in a chat (conversation history), ordered by time.
-     */
-    // @GetMapping("/{chatId}/messages")
-    // public ResponseEntity<List<ChatMessageResponse>> getChatMessages(@PathVariable Long chatId) {
-    //     try {
-    //         Long currentUserId = getCurrentUserId();
-    //         var messages = chatService.getChatMessages(chatId, currentUserId);
-
-    //         List<ChatMessageResponse> response = messages.stream()
-    //                 .map(message -> new ChatMessageResponse(message.getMessageId(),
-    //                 message.getContent(), message.getSender().getUserId(),
-    //                 message.getSentAt(), message.isModelMessage()))
-    //                 .collect(Collectors.toList());
-
-    //         return new ResponseEntity<>(response, HttpStatus.OK);
-    //     } catch (IllegalArgumentException e) {
-    //         return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
-    //     } catch (Exception e) {
-    //         return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-    //     }
-    // }
-
-    /**
-     * Add team members to a chat.
-     */
     @PostMapping("/{chatId}/participants")
     public ResponseEntity<SuccessResponse> addParticipants(
             @PathVariable Long chatId,
@@ -159,9 +102,7 @@ public class ChatController {
         }
     }
 
-    /**
-     * Remove a participant from a chat.
-     */
+    
     @DeleteMapping("/{chatId}/participants/{userId}")
     public ResponseEntity<SuccessResponse> removeParticipant(
             @PathVariable Long chatId,
@@ -178,9 +119,7 @@ public class ChatController {
         }
     }
 
-    /**
-     * Delete a chat session.
-     */
+    
     @DeleteMapping("/{chatId}")
     public ResponseEntity<SuccessResponse> deleteChat(@PathVariable Long chatId) {
         try {

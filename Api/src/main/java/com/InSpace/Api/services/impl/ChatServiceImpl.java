@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.InSpace.Api.domain.AiChatResponse;
 import com.InSpace.Api.domain.Chat;
 import com.InSpace.Api.domain.ChatMessage;
 import com.InSpace.Api.domain.User;
@@ -248,22 +247,6 @@ public class ChatServiceImpl implements ChatService {
                 .build();
     }
 
-    private boolean isLikelyPrompt(String content) {
-        if (content == null) {
-            return false;
-        }
-        String trimmed = content.trim();
-        if (trimmed.startsWith("/prompt")) {
-            return true;
-        }
-        if (trimmed.startsWith("{") && trimmed.contains("\"schema\"")) {
-            return true;
-        }
-        if (trimmed.toLowerCase().contains("schema:")) {
-            return true;
-        }
-        return false;
-    }
 
     private String extractSchemaUrl(String content) {
         if (content == null) {

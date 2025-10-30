@@ -9,15 +9,11 @@ import com.InSpace.Api.infra.repository.ChatMessageRepository;
 import com.InSpace.Api.infra.repository.ChatRepository;
 import com.InSpace.Api.infra.repository.PromptRepository;
 import com.InSpace.Api.services.AiService;
-import com.InSpace.Api.services.ai.AiModelResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Small agent responsible for deciding whether a user message is a prompt or a normal message,
- * calling the AiService accordingly and persisting the AI reply.
- */
+
 @Component
 public class ChatAgent {
 
@@ -59,10 +55,7 @@ public class ChatAgent {
         return false;
     }
 
-    /**
-     * Handle a normal message by sending it to the AiService for a short reply
-     * and persisting the reply as a ChatMessage (isModelMessage=true).
-     */
+
     @Transactional
     public ChatMessage handleNormalMessage(ChatMessage userMessage) {
         String content = userMessage.getContent();
@@ -87,10 +80,7 @@ public class ChatAgent {
         return aiMessage;
     }
 
-    /**
-     * Handle a prompt: create Prompt entity (if not already linked), call AiService to process,
-     * persist AiChatResponse and an AI ChatMessage.
-     */
+
     @Transactional
     public ChatMessage handlePrompt(ChatMessage userMessage) {
         // create and save prompt linked to this chat message
