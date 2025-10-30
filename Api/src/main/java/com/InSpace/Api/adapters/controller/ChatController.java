@@ -1,6 +1,5 @@
 package com.InSpace.Api.adapters.controller;
 
-import com.InSpace.Api.config.Security.JWTGenerator;
 import com.InSpace.Api.services.ChatService;
 import com.InSpace.Api.services.dto.Chat.*;
 import com.InSpace.Api.services.dto.SuccessResponse;
@@ -71,22 +70,22 @@ public class ChatController {
      * Append an AI model response to the chat.
      * This endpoint can be called after getting a response from your AI model.
      */
-    @PostMapping("/{chatId}/model-response")
-    public ResponseEntity<ChatMessageResponse> appendModelMessage(
-            @PathVariable Long chatId,
-            @RequestBody String content) {
-        try {
-            Long currentUserId = getCurrentUserId();
-            // Verify user has access to this chat
-            chatService.getChatById(chatId, currentUserId);
-            ChatMessageResponse response = chatService.appendModelMessage(chatId, content);
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+    // @PostMapping("/{chatId}/model-response")
+    // public ResponseEntity<ChatMessageResponse> appendModelMessage(
+    //         @PathVariable Long chatId,
+    //         @RequestBody String content) {
+    //     try {
+    //         Long currentUserId = getCurrentUserId();
+    //         // Verify user has access to this chat
+    //         chatService.getChatById(chatId, currentUserId);
+    //         ChatMessageResponse response = chatService.appendModelMessage(chatId, content);
+    //         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    //     } catch (IllegalArgumentException e) {
+    //         return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+    //     } catch (Exception e) {
+    //         return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+    //     }
+    // }
 
     /**
      * Get all chats the user is a participant in.
@@ -121,18 +120,25 @@ public class ChatController {
     /**
      * Get all messages in a chat (conversation history), ordered by time.
      */
-    @GetMapping("/{chatId}/messages")
-    public ResponseEntity<List<ChatMessageResponse>> getChatMessages(@PathVariable Long chatId) {
-        try {
-            Long currentUserId = getCurrentUserId();
-            List<ChatMessageResponse> messages = chatService.getChatMessages(chatId, currentUserId);
-            return new ResponseEntity<>(messages, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        }
-    }
+    // @GetMapping("/{chatId}/messages")
+    // public ResponseEntity<List<ChatMessageResponse>> getChatMessages(@PathVariable Long chatId) {
+    //     try {
+    //         Long currentUserId = getCurrentUserId();
+    //         var messages = chatService.getChatMessages(chatId, currentUserId);
+
+    //         List<ChatMessageResponse> response = messages.stream()
+    //                 .map(message -> new ChatMessageResponse(message.getMessageId(),
+    //                 message.getContent(), message.getSender().getUserId(),
+    //                 message.getSentAt(), message.isModelMessage()))
+    //                 .collect(Collectors.toList());
+
+    //         return new ResponseEntity<>(response, HttpStatus.OK);
+    //     } catch (IllegalArgumentException e) {
+    //         return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+    //     } catch (Exception e) {
+    //         return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    //     }
+    // }
 
     /**
      * Add team members to a chat.

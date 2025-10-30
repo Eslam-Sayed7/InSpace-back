@@ -55,7 +55,6 @@ public class TestSuite {
         scenario.setTestSuite(null);
     }
 
-    // Getters and Setters
     public Long getSuiteId() {
         return suiteId;
     }

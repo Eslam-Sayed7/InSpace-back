@@ -1,22 +1,34 @@
 package com.InSpace.Api.services.impl;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.InSpace.Api.domain.AiChatResponse;
 import com.InSpace.Api.domain.Chat;
 import com.InSpace.Api.domain.ChatMessage;
 import com.InSpace.Api.domain.User;
 import com.InSpace.Api.infra.repository.ChatMessageRepository;
 import com.InSpace.Api.infra.repository.ChatRepository;
+import com.InSpace.Api.infra.repository.AiResponseRepository;
+import com.InSpace.Api.infra.repository.PromptRepository;
 import com.InSpace.Api.infra.repository.UserRepository;
+import com.InSpace.Api.services.AiService;
 import com.InSpace.Api.services.ChatService;
-import com.InSpace.Api.services.dto.Chat.*;
+import com.InSpace.Api.services.agent.ChatAgent;
 import com.InSpace.Api.services.dto.ResourceNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.InSpace.Api.services.dto.Chat.ChatMessageResponse;
+import com.InSpace.Api.services.dto.Chat.ChatParticipantResponse;
+import com.InSpace.Api.services.dto.Chat.ChatResponse;
+import com.InSpace.Api.services.dto.Chat.CreateChatRequest;
+import com.InSpace.Api.services.dto.Chat.SendMessageRequest;
 
 @Service
 public class ChatServiceImpl implements ChatService {
@@ -24,14 +36,20 @@ public class ChatServiceImpl implements ChatService {
     private final ChatRepository chatRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
+    private final ChatAgent chatAgent;
 
     @Autowired
     public ChatServiceImpl(ChatRepository chatRepository,
-                          ChatMessageRepository chatMessageRepository,
-                          UserRepository userRepository) {
+            ChatMessageRepository chatMessageRepository,
+            UserRepository userRepository,
+            PromptRepository promptRepository,
+            AiResponseRepository aiResponseRepository,
+            AiService aiService,
+            com.InSpace.Api.services.agent.ChatAgent chatAgent) {
         this.chatRepository = chatRepository;
         this.chatMessageRepository = chatMessageRepository;
         this.userRepository = userRepository;
+        this.chatAgent = chatAgent;
     }
 
     @Override
@@ -67,20 +85,17 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public ChatMessageResponse sendMessage(SendMessageRequest request, Long senderId) {
-        // Validate chat exists
+
         Chat chat = chatRepository.findById(request.getChatId())
                 .orElseThrow(() -> new ResourceNotFoundException("Chat not found"));
 
-        // Validate sender is participant (team member)
         if (!chatRepository.isUserParticipant(request.getChatId(), senderId)) {
             throw new IllegalArgumentException("User is not a participant of this chat");
         }
 
-        // Get sender
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // Create user message
         ChatMessage message = ChatMessage.builder()
                 .chat(chat)
                 .sender(sender)
@@ -90,37 +105,14 @@ public class ChatServiceImpl implements ChatService {
 
         message = chatMessageRepository.save(message);
 
-        // Update chat's updatedAt timestamp
         chat.setUpdatedAt(LocalDateTime.now());
         chatRepository.save(chat);
 
-        // TODO: Call AI model here to generate response
-        // String aiResponse = callAIModel(chatId, content);
-        // appendModelMessage(chatId, aiResponse);
-
-        return mapToMessageResponse(message);
-    }    /**
-     * Append an AI/model message to the chat (for ChatGPT-like responses).
-     */
-    @Override
-    @Transactional
-    public ChatMessageResponse appendModelMessage(Long chatId, String content) {
-        Chat chat = chatRepository.findById(chatId)
-                .orElseThrow(() -> new ResourceNotFoundException("Chat not found"));
-
-        // Create AI model message (no sender, or set a system user)
-        ChatMessage message = ChatMessage.builder()
-                .chat(chat)
-                .sender(null) // AI message has no human sender
-                .content(content)
-                .isModelMessage(true)
-                .build();
-
-        message = chatMessageRepository.save(message);
-        chat.setUpdatedAt(LocalDateTime.now());
-        chatRepository.save(chat);
+        // Delegate to agent 
+        chatAgent.processUserMessage(message);
         return mapToMessageResponse(message);
     }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -137,7 +129,6 @@ public class ChatServiceImpl implements ChatService {
         Chat chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> new ResourceNotFoundException("Chat not found"));
 
-        // Only participants (team members) can access the chat
         if (!chatRepository.isUserParticipant(chatId, userId)) {
             throw new IllegalArgumentException("Access denied: User is not a participant of this chat");
         }
@@ -147,17 +138,15 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ChatMessageResponse> getChatMessages(Long chatId, Long userId) {
-        // Validate user is participant
+    public List<ChatMessage> getChatMessages(Long chatId, Long userId) {
+
         if (!chatRepository.isUserParticipant(chatId, userId)) {
             throw new IllegalArgumentException("Access denied: User is not a participant of this chat");
         }
 
-        // Return messages ordered by sentAt (conversation order)
-        List<ChatMessage> messages = chatMessageRepository.findMessagesByChatId(chatId);
-        return messages.stream()
-                .map(this::mapToMessageResponse)
-                .collect(Collectors.toList());
+        // ordered ASC by sentAt
+        var messages = chatMessageRepository.findMessagesByChatId(chatId);
+        return messages;
     }
 
     @Override
@@ -250,6 +239,7 @@ public class ChatServiceImpl implements ChatService {
                 .build();
     }
 
+
     private ChatParticipantResponse mapToParticipantResponse(User user) {
         return ChatParticipantResponse.builder()
                 .userId(user.getUserId())
@@ -257,4 +247,47 @@ public class ChatServiceImpl implements ChatService {
                 .email(user.getEmail())
                 .build();
     }
+
+    private boolean isLikelyPrompt(String content) {
+        if (content == null) {
+            return false;
+        }
+        String trimmed = content.trim();
+        if (trimmed.startsWith("/prompt")) {
+            return true;
+        }
+        if (trimmed.startsWith("{") && trimmed.contains("\"schema\"")) {
+            return true;
+        }
+        if (trimmed.toLowerCase().contains("schema:")) {
+            return true;
+        }
+        return false;
+    }
+
+    private String extractSchemaUrl(String content) {
+        if (content == null) {
+            return null;
+        }
+        // look for 'schema:' token
+        int idx = content.toLowerCase().indexOf("schema:");
+        if (idx >= 0) {
+            String after = content.substring(idx + "schema:".length()).trim();
+            // take first whitespace-delimited token
+            String[] parts = after.split("\\s+", 2);
+            if (parts.length > 0 && parts[0].startsWith("http")) {
+                return parts[0];
+            }
+        }
+
+        // fallback: find any http(s) url
+        Pattern urlPattern = Pattern.compile("https?://\\S+");
+        Matcher m = urlPattern.matcher(content);
+        if (m.find()) {
+            return m.group();
+        }
+
+        return null;
+    }
+
 }
