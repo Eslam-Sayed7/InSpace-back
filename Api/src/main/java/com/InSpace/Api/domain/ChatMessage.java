@@ -15,25 +15,33 @@ import java.time.LocalDateTime;
 @Setter
 public class ChatMessage {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long messageId;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long messageId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_id", nullable = false)
-    private Chat chat;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "chat_id", nullable = false)
+  private Chat chat;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id")
-    private User sender;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "sender_id")
+  private User sender;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String content;
+  @Column(columnDefinition = "TEXT", nullable = false)
+  private String content;
 
-    @Column
-    private boolean isModelMessage = false;  // true if message is from AI model
+  @Column
+  @Builder.Default
+  private boolean isModelMessage = false; // if true go fetch AI response
 
-    @Column
-    @CreationTimestamp
-    private LocalDateTime sentAt = LocalDateTime.now();
+  @Column
+  @CreationTimestamp
+  @Builder.Default
+  private LocalDateTime sentAt = LocalDateTime.now();
+
+  @OneToOne(mappedBy = "chatMessage", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+  private Prompt prompt;
+
+  @OneToOne(mappedBy = "chatMessage", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+  private AiChatResponse chatResponse;
 }

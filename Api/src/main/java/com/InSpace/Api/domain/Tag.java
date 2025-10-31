@@ -33,17 +33,6 @@ public class Tag {
         this.name = name;
     }
 
-    // Helper methods
-    public void addScenario(TestScenario scenario) {
-        scenarios.add(scenario);
-        scenario.getTags().add(this);
-    }
-
-    public void removeScenario(TestScenario scenario) {
-        scenarios.remove(scenario);
-        scenario.getTags().remove(this);
-    }
-
     public Long getTagId() {
         return tagId;
     }
