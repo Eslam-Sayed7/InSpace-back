@@ -29,24 +29,25 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String token = getJWTFromRequest(request);
+        // If there's no token in the request, skip validation and do not try to parse it
+        if (StringUtils.hasText(token)) {
+            boolean isValidToken = tokenGenerator.validateToken(token);
+            boolean isNotRefusedToken = tokenRepository.findByToken(token)
+                    .map(t -> !t.isExpired() && !t.isRevoked())
+                    .orElse(false);
 
-        boolean isValidToken = tokenGenerator.validateToken(token);
-        boolean isNotRefusedToken = tokenRepository.findByToken(token)
-                .map(t -> !t.isExpired() && !t.isRevoked())
-                .orElse(false);
+            if (isValidToken && isNotRefusedToken) {
+                String username = tokenGenerator.getUsernameFromJWT(token);
 
-        if (StringUtils.hasText(token) && isValidToken && isNotRefusedToken) {
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
-            String username = tokenGenerator.getUsernameFromJWT(token);
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null,
+                        userDetails.getAuthorities());
 
-            UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    userDetails, null,
-                    userDetails.getAuthorities());
-
-            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            }
         }
         filterChain.doFilter(request, response);
     }
@@ -65,7 +66,18 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
 
         String path = request.getRequestURI();
-        return path.equals("/api/auth/login");
+
+        if (path == null) return false;
+
+        if (path.equals("/api/auth/login") || path.equals("/api/auth/register")
+                || path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/webjars")
+                || path.equals("/swagger-ui.html")
+                || path.equals("/swagger-ui/index.html")) {
+            return true;
+        }
+        return false;
     }
 
 }

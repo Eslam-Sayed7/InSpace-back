@@ -1,6 +1,7 @@
 package com.InSpace.Api.domain;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -24,6 +25,7 @@ public class TestScenario {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "suite_id", nullable = false)
     @NotNull(message = "Test suite is required")
+    @JsonBackReference
     private TestSuite testSuite;
 
     @Column(name = "name", nullable = false, length = 255)

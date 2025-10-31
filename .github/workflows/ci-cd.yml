@@ -2,11 +2,11 @@ name: InSpace API CI
 
 on:
   push:
-    branches: [ main, feature/CI-CD ]
-    paths: [ 'Api/**' ]
+    branches: [main, feature/CI-CD]
+    paths: ["Api/**"]
   pull_request:
-    branches: [ main ]
-    paths: [ 'Api/**' ]
+    branches: [main]
+    paths: ["Api/**"]
 
 jobs:
   build-and-test:
@@ -31,29 +31,69 @@ jobs:
           - 5432:5432
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v5
+      - name: Checkout code
+        uses: actions/checkout@v5
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v5
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: "17"
+          distribution: "temurin"
 
-    - name: Cache Maven dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
 
-    - name: Run tests
-      run: ./mvnw clean test
-      env:
-        DB_HOST: localhost
-        DB_PORT: 5432
-        DB_NAME: inspace_test
-        DB_USERNAME: postgres
-        DB_PASSWORD: postgres
-        JWT_SECRET: test-jwt-secret-key-for-testing-purposes-minimum-32-characters-long
-        JWT_EXPIRATION: 86400000
+      - name: Run tests
+        run: ./mvnw clean test
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: inspace_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+          JWT_SECRET: test-jwt-secret-key-for-testing-purposes-minimum-32-characters-long
+          JWT_EXPIRATION: 86400000
+
+  deploy-to-ec2:
+    name: Deploy to EC2
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            set -e
+            # ensure we are in the repo root; clone if missing
+            REPO_DIR=/home/ubuntu/
+            if [ ! -d "$REPO_DIR/InSpace-back/.git" ]; then
+              echo "Repo not found at $REPO_DIR — attempting HTTPS clone"
+              git clone https://github.com/Eslam-Sayed7/InSpace-back.git
+            fi
+            cd "$REPO_DIR/InSpace-back"
+            git fetch origin main || { echo "git fetch failed — check deploy key or repo access"; exit 1; }
+            git reset --hard origin/main
+            cd Api
+            echo "Creating .env for deployment (Api/.env) from repository secrets"
+            # Write .env using repository secrets (ensure you set these in GitHub Settings→Secrets)
+            printf '%s=%s\n' DB_HOST "${{ secrets.DEPLOY_DB_HOST }}" > .env
+            printf '%s=%s\n' DB_PORT "${{ secrets.DEPLOY_DB_PORT }}" >> .env
+            printf '%s=%s\n' DB_NAME "${{ secrets.DEPLOY_DB_NAME }}" >> .env
+            printf '%s=%s\n' DB_USERNAME "${{ secrets.DEPLOY_DB_USERNAME }}" >> .env
+            printf '%s=%s\n' DB_PASSWORD "${{ secrets.DEPLOY_DB_PASSWORD }}" >> .env
+            printf '%s=%s\n' JWT_SECRET "${{ secrets.DEPLOY_JWT_SECRET }}" >> .env
+            printf '%s=%s\n' JWT_EXPIRATION "${{ secrets.DEPLOY_JWT_EXPIRATION }}" >> .env
+            docker compose down -v || true
+            docker compose up -d --build
