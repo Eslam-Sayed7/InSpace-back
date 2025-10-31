@@ -29,14 +29,14 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String token = getJWTFromRequest(request);
-
-        boolean isValidToken = tokenGenerator.validateToken(token);
-        boolean isNotRefusedToken = tokenRepository.findByToken(token)
-                .map(t -> !t.isExpired() && !t.isRevoked())
-                .orElse(false);
+        // If there's no token in the request, skip validation and do not try to parse it
         if (StringUtils.hasText(token)) {
-            if (isValidToken && isNotRefusedToken) {
+            boolean isValidToken = tokenGenerator.validateToken(token);
+            boolean isNotRefusedToken = tokenRepository.findByToken(token)
+                    .map(t -> !t.isExpired() && !t.isRevoked())
+                    .orElse(false);
 
+            if (isValidToken && isNotRefusedToken) {
                 String username = tokenGenerator.getUsernameFromJWT(token);
 
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
@@ -47,9 +47,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
             }
-
         }
         filterChain.doFilter(request, response);
     }
@@ -68,7 +66,18 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
 
         String path = request.getRequestURI();
-        return path.equals("/api/auth/login");
+
+        if (path == null) return false;
+
+        if (path.equals("/api/auth/login") || path.equals("/api/auth/register")
+                || path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/webjars")
+                || path.equals("/swagger-ui.html")
+                || path.equals("/swagger-ui/index.html")) {
+            return true;
+        }
+        return false;
     }
 
 }
