@@ -76,8 +76,14 @@ jobs:
           port: 22
           script: |
             set -e
-            cd /home/ubuntu/ || exit 1
-            git fetch origin main
+            # ensure we are in the repo root; clone if missing
+            REPO_DIR=/home/ubuntu/
+            if [ ! -d "$REPO_DIR/InSpace-back/.git" ]; then
+              echo "Repo not found at $REPO_DIR — attempting HTTPS clone"
+              git clone https://github.com/Eslam-Sayed7/InSpace-back.git
+            fi
+            cd "$REPO_DIR/InSpace-back"
+            git fetch origin main || { echo "git fetch failed — check deploy key or repo access"; exit 1; }
             git reset --hard origin/main
             cd Api
             echo "Creating .env for deployment (Api/.env) from repository secrets"
