@@ -24,14 +24,6 @@ public class Module {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "scenarios", columnDefinition = "TEXT")
-    private String scenarios;
-
-    @Column(name = "acceptance_criteria", columnDefinition = "TEXT")
-    private String acceptanceCriteria;
-
-    @Column(name = "prerequisite", columnDefinition = "TEXT")
-    private String prerequisite;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -62,20 +54,6 @@ public class Module {
         this.description = description;
     }
 
-    public Module(String name, String description, String scenarios, String acceptanceCriteria) {
-        this.name = name;
-        this.description = description;
-        this.scenarios = scenarios;
-        this.acceptanceCriteria = acceptanceCriteria;
-    }
-
-    public Module(String name, String description, String scenarios, String acceptanceCriteria, String prerequisite) {
-        this.name = name;
-        this.description = description;
-        this.scenarios = scenarios;
-        this.acceptanceCriteria = acceptanceCriteria;
-        this.prerequisite = prerequisite;
-    }
 
     public void addTestcase(TestCase testcase) {
         testcases.add(testcase);
@@ -133,30 +111,6 @@ public class Module {
 
     public void setTestcases(List<TestCase> testcases) {
         this.testcases = testcases;
-    }
-
-    public String getScenarios() {
-        return scenarios;
-    }
-
-    public void setScenarios(String scenarios) {
-        this.scenarios = scenarios;
-    }
-
-    public String getAcceptanceCriteria() {
-        return acceptanceCriteria;
-    }
-
-    public void setAcceptanceCriteria(String acceptanceCriteria) {
-        this.acceptanceCriteria = acceptanceCriteria;
-    }
-
-    public String getPrerequisite() {
-        return prerequisite;
-    }
-
-    public void setPrerequisite(String prerequisite) {
-        this.prerequisite = prerequisite;
     }
 
     public Project getProject() {

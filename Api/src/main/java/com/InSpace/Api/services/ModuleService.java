@@ -40,11 +40,11 @@ public class ModuleService {
         return moduleRepository.save(module);
     }
 
-    public Module createModule(String name, String description, String scenarios, String acceptanceCriteria, String prerequisite) {
+    public Module createModule(String name, String description, String prerequisite) {
         if (moduleRepository.existsByName(name)) {
             throw new IllegalArgumentException("Module with name '" + name + "' already exists");
         }
-        Module module = new Module(name, description, scenarios, acceptanceCriteria, prerequisite);
+        Module module = new Module(name, description);
         return moduleRepository.save(module);
     }
 
@@ -63,7 +63,7 @@ public class ModuleService {
         return moduleRepository.findAll();
     }
 
-    public Module update(Long id, String name, String description, String scenarios, String acceptanceCriteria, String prerequisite) {
+    public Module update(Long id, String name, String description) {
         Module module = moduleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Module with ID " + id + " not found"));
 
@@ -74,9 +74,6 @@ public class ModuleService {
 
         module.setName(name);
         module.setDescription(description);
-        module.setScenarios(scenarios);
-        module.setAcceptanceCriteria(acceptanceCriteria);
-        module.setPrerequisite(prerequisite);
         return moduleRepository.save(module);
     }
 

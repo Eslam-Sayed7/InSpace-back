@@ -31,8 +31,7 @@ public class ModuleController {
     @PostMapping("/create")
     public ResponseEntity<?> createModule(@RequestBody CreateModuleRequest request) {
         try {
-            Module module = moduleService.createModule(request.getName(), request.getDescription(),
-             request.getScenarios(), request.getAcceptanceCriteria(), request.getPrerequisite());
+            Module module = moduleService.createModule(request.getName(), request.getDescription());
             return ResponseEntity.status(HttpStatus.CREATED).body(module);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -72,7 +71,7 @@ public class ModuleController {
     public ResponseEntity<?> updateModule(@PathVariable Long id,
             @RequestBody @Valid UpdateModuleRequest request) {
         try {
-            Module updatedModule = moduleService.update(id, request.getName(), request.getDescription(), request.getScenarios(), request.getAcceptanceCriteria(), request.getPrerequisite());
+            Module updatedModule = moduleService.update(id, request.getName(), request.getDescription());
             return ResponseEntity.ok(updatedModule);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
