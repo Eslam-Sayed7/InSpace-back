@@ -204,11 +204,11 @@ public class ChatServiceImpl implements ChatService {
                 .map(this::mapToParticipantResponse)
                 .collect(Collectors.toList());
 
-        // Get last message
-        ChatMessageResponse lastMessage = null;
+        List<ChatMessageResponse> messages = new ArrayList<>();
         if (!chat.getMessages().isEmpty()) {
-            ChatMessage lastMsg = chat.getMessages().get(chat.getMessages().size() - 1);
-            lastMessage = mapToMessageResponse(lastMsg);
+            for (ChatMessage msg : chat.getMessages()) {
+                messages.add(mapToMessageResponse(msg));
+            }
         }
 
         // Get message count
@@ -221,7 +221,7 @@ public class ChatServiceImpl implements ChatService {
                 .createdAt(chat.getCreatedAt())
                 .updatedAt(chat.getUpdatedAt())
                 .participants(participants)
-                .lastMessage(lastMessage)
+                .messages(messages)
                 .messageCount(messageCount)
                 .build();
     }

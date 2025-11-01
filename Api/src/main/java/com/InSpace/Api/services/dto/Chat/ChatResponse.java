@@ -16,6 +16,6 @@ public class ChatResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<ChatParticipantResponse> participants;
-    private ChatMessageResponse lastMessage;
+    private List<ChatMessageResponse> messages;
     private int messageCount;
 }
