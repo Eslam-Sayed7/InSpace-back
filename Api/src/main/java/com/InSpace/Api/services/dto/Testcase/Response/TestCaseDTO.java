@@ -1,24 +1,22 @@
-package com.InSpace.Api.services.dto.TestScenario.Response;
+package com.InSpace.Api.services.dto.Testcase.Response;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 
-public class TestScenarioDTO {
+public class TestCaseDTO {
 
     private String name;
     private String description;
     private Short priority;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private Set<String> tags;
-    private Long scenarioId;
+    private Long testcaseId;
 
-    public Long getScenarioId() {
-        return scenarioId;
+    public Long getTestcaseId() {
+        return testcaseId;
     }
 
-    public void setScenarioId(Long scenarioId) {
-        this.scenarioId = scenarioId;
+    public void setTestcaseId(Long testcaseId) {
+        this.testcaseId = testcaseId;
     }
 
     public String getName() {
@@ -60,13 +58,4 @@ public class TestScenarioDTO {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-
-    public Set<String> getTags() {
-        return tags;
-    }
-
-    public void setTags(Set<String> tags) {
-        this.tags = tags;
-    }
-
 }

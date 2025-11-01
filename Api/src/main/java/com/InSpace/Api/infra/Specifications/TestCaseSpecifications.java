@@ -1,19 +1,19 @@
 package com.InSpace.Api.infra.Specifications;
 
-import com.InSpace.Api.domain.TestScenario;
+import com.InSpace.Api.domain.TestCase;
 import org.springframework.data.jpa.domain.Specification;
 
-public class TestScenarioSpecifications {
+public class TestCaseSpecifications {
 
-    public static Specification<TestScenario> hasSuiteId(Long suiteId) {
-        return SpecificationUtils.joinEqual("testSuite", join -> join.get("suiteId"), suiteId);
+    public static Specification<TestCase> hasModuleId(Long moduleId) {
+        return SpecificationUtils.joinEqual("module", join -> join.get("moduleId"), moduleId);
     }
 
-    public static Specification<TestScenario> hasPriority(Short priority) {
+    public static Specification<TestCase> hasPriority(Short priority) {
         return SpecificationUtils.equal(root -> root.get("priority"), priority);
     }
 
-    public static Specification<TestScenario> nameOrDescriptionContains(String keyword) {
+    public static Specification<TestCase> nameOrDescriptionContains(String keyword) {
         return (root, query, cb) -> {
             if (keyword == null || keyword.trim().isEmpty()) {
                 return cb.conjunction();
@@ -25,7 +25,7 @@ public class TestScenarioSpecifications {
         };
     }
 
-    public static Specification<TestScenario> hasTagName(String tagName) {
+    public static Specification<TestCase> hasTagName(String tagName) {
         return SpecificationUtils.joinEqual("tags", join -> join.get("name"), tagName);
     }
 }

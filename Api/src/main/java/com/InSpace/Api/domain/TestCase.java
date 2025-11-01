@@ -1,27 +1,42 @@
 package com.InSpace.Api.domain;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-@Table(name = "test_suites")
-public class TestSuite {
+@Table(name = "testcases")
+public class TestCase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "suite_id")
-    private Long suiteId;
+    @Column(name = "testcase_id")
+    private Long testcaseId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "module_id", nullable = false)
+    @NotNull(message = "Module is required")
+    @JsonBackReference
+    private Module module;
 
     @Column(name = "name", nullable = false, length = 255)
+    @NotBlank(message = "Testcase name is required")
     private String name;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
+
+    @Column(name = "priority")
+    @Min(value = 1, message = "Priority must be between 1 and 5")
+    @Max(value = 5, message = "Priority must be between 1 and 5")
+    private Short priority = 3;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -31,38 +46,42 @@ public class TestSuite {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "testSuite", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private List<TestScenario> testScenarios = new ArrayList<>();
-
-    public TestSuite() {
+    public TestCase() {
     }
 
-    public TestSuite(String name) {
+    public TestCase(String name, Module module) {
         this.name = name;
+        this.module = module;
     }
 
-    public TestSuite(String name, String description) {
+    public TestCase(String name, String description, Module module) {
         this.name = name;
         this.description = description;
+        this.module = module;
     }
 
-    public void addTestScenario(TestScenario scenario) {
-        testScenarios.add(scenario);
-        scenario.setTestSuite(this);
+    public TestCase(String name, String description, Short priority, Module module) {
+        this.name = name;
+        this.description = description;
+        this.priority = priority;
+        this.module = module;
     }
 
-    public void removeTestScenario(TestScenario scenario) {
-        testScenarios.remove(scenario);
-        scenario.setTestSuite(null);
+    // Getters and Setters
+    public Long getTestcaseId() {
+        return testcaseId;
     }
 
-    public Long getSuiteId() {
-        return suiteId;
+    public void setTestcaseId(Long testcaseId) {
+        this.testcaseId = testcaseId;
     }
 
-    public void setSuiteId(Long suiteId) {
-        this.suiteId = suiteId;
+    public Module getModule() {
+        return module;
+    }
+
+    public void setModule(Module module) {
+        this.module = module;
     }
 
     public String getName() {
@@ -81,6 +100,14 @@ public class TestSuite {
         this.description = description;
     }
 
+    public Short getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Short priority) {
+        this.priority = priority;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -97,23 +124,15 @@ public class TestSuite {
         this.updatedAt = updatedAt;
     }
 
-    public List<TestScenario> getTestScenarios() {
-        return testScenarios;
-    }
-
-    public void setTestScenarios(List<TestScenario> testScenarios) {
-        this.testScenarios = testScenarios;
-    }
-
     @Override
     public String toString() {
-        return "TestSuite{" +
-                "suiteId=" + suiteId +
+        return "TestCase{" +
+                "testcaseId=" + testcaseId +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
+                ", priority=" + priority +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", scenariosCount=" + (testScenarios != null ? testScenarios.size() : 0) +
                 '}';
     }
 
@@ -123,8 +142,8 @@ public class TestSuite {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        TestSuite testSuite = (TestSuite) o;
-        return suiteId != null && suiteId.equals(testSuite.suiteId);
+        TestCase that = (TestCase) o;
+        return testcaseId != null && testcaseId.equals(that.testcaseId);
     }
 
     @Override

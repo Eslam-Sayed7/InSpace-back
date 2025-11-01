@@ -1,29 +1,26 @@
-package com.InSpace.Api.services.dto.TestScenario.Requests;
+package com.InSpace.Api.services.dto.Testcase.Requests;
 
-import java.util.Set;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public class CreateTestScenarioRequest {
+public class CreateTestcaseRequest {
     @NotBlank(message = "Name is required")
     private String name;
     private String description;
     private Short priority;
-    @NotNull(message = "Suite ID is required")
-    private Long suiteId;
-    private Set<String> tagNames;
+    @NotNull(message = "Module ID is required")
+    private Long moduleId;
 
-    public CreateTestScenarioRequest() {
+    public CreateTestcaseRequest() {
     }
 
-    public CreateTestScenarioRequest(String name, String description,
-            Set<String> tagNames, Short priority, Long suiteId) {
+    public CreateTestcaseRequest(String name, String description,
+         Short priority, Long moduleId) {
         this.name = name;
         this.description = description;
         this.priority = priority;
-        this.suiteId = suiteId;
-        this.tagNames = tagNames;
+        this.moduleId = moduleId;
     }
 
     public String getName() {
@@ -50,19 +47,12 @@ public class CreateTestScenarioRequest {
         this.priority = priority;
     }
 
-    public Long getSuiteId() {
-        return suiteId;
+    public Long getModuleId() {
+        return moduleId;
     }
 
-    public void setSuiteId(Long suiteId) {
-        this.suiteId = suiteId;
+    public void setModuleId(Long moduleId) {
+        this.moduleId = moduleId;
     }
 
-    public Set<String> getTagNames() {
-        return tagNames;
-    }
-
-    public void setTagNames(Set<String> tagNames) {
-        this.tagNames = tagNames;
-    }
 }

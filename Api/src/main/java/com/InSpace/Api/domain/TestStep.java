@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "test_steps",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"scenario_id", "sequence_order"}))
+    uniqueConstraints = @UniqueConstraint(columnNames = {"testcase_id", "sequence_order"}))
 public class TestStep {
 
     @Id
@@ -18,9 +18,9 @@ public class TestStep {
     private Long stepId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "scenario_id", nullable = false)
-    @NotNull(message = "Test scenario is required")
-    private TestScenario testScenario;
+    @JoinColumn(name = "testcase_id", nullable = false)
+    @NotNull(message = "Testcase is required")
+    private TestCase testCase;
 
     @Column(name = "sequence_order", nullable = false)
     @NotNull(message = "Sequence order is required")
@@ -31,11 +31,6 @@ public class TestStep {
     @NotNull(message = "Action type is required")
     private ActionType actionType;
 
-    @Column(name = "selector", columnDefinition = "TEXT")
-    private String selector;
-
-    @Column(name = "input_value", columnDefinition = "TEXT")
-    private String inputValue;
 
     @Column(name = "expected_outcome", columnDefinition = "TEXT")
     private String expectedOutcome;
@@ -51,18 +46,13 @@ public class TestStep {
     public TestStep() {
     }
 
-    public TestStep(TestScenario testScenario, Integer sequenceOrder, ActionType actionType) {
-        this.testScenario = testScenario;
+    public TestStep(TestCase testCase, Integer sequenceOrder, ActionType actionType) {
+        this.testCase = testCase;
         this.sequenceOrder = sequenceOrder;
         this.actionType = actionType;
     }
 
-    public TestStep(TestScenario testScenario, Integer sequenceOrder, ActionType actionType, String selector) {
-        this.testScenario = testScenario;
-        this.sequenceOrder = sequenceOrder;
-        this.actionType = actionType;
-        this.selector = selector;
-    }
+    // keep constructor without selector/inputValue
 
     // Getters and Setters
     public Long getStepId() {
@@ -73,12 +63,12 @@ public class TestStep {
         this.stepId = stepId;
     }
 
-    public TestScenario getTestScenario() {
-        return testScenario;
+    public TestCase getTestCase() {
+        return testCase;
     }
 
-    public void setTestScenario(TestScenario testScenario) {
-        this.testScenario = testScenario;
+    public void setTestCase(TestCase testCase) {
+        this.testCase = testCase;
     }
 
     public Integer getSequenceOrder() {
@@ -97,21 +87,6 @@ public class TestStep {
         this.actionType = actionType;
     }
 
-    public String getSelector() {
-        return selector;
-    }
-
-    public void setSelector(String selector) {
-        this.selector = selector;
-    }
-
-    public String getInputValue() {
-        return inputValue;
-    }
-
-    public void setInputValue(String inputValue) {
-        this.inputValue = inputValue;
-    }
 
     public String getExpectedOutcome() {
         return expectedOutcome;
@@ -142,8 +117,7 @@ public class TestStep {
         return "TestStep{" +
                 "stepId=" + stepId +
                 ", sequenceOrder=" + sequenceOrder +
-                ", selector='" + selector + '\'' +
-                ", inputValue='" + inputValue + '\'' +
+                ", expectedOutcome='" + expectedOutcome + '\'' +
                 ", expectedOutcome='" + expectedOutcome + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +

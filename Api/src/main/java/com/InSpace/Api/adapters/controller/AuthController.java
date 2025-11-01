@@ -5,6 +5,7 @@ import com.InSpace.Api.infra.repository.UserRepository;
 // import com.InSpace.Api.services.EmailService;
 import com.InSpace.Api.services.UserService;
 import com.InSpace.Api.services.dto.Auth.AuthServiceResult;
+import com.InSpace.Api.services.dto.Auth.CreateRoleRequest;
 import com.InSpace.Api.services.dto.Auth.LoginRequestModel;
 import com.InSpace.Api.services.dto.Auth.RegisterRequestModel;
 import com.InSpace.Api.services.dto.Email.EmailFormateDto;
@@ -26,11 +27,32 @@ public class AuthController {
 
     // private final EmailService emailService;
     private final UserService userService;
+    private final RoleRepository roleRepository;
 
     @Autowired
     public AuthController(UserRepository userRepository,
             RoleRepository roleRepository, PasswordEncoder passwordEncoder,UserService userService) {
         this.userService = userService;
+        this.roleRepository = roleRepository;
+    }
+
+    // Create a new role
+    @PostMapping("role")
+    public ResponseEntity<?> createRole(@RequestBody CreateRoleRequest request) {
+        if (request == null || request.getRoleName() == null || request.getRoleName().isEmpty()) {
+            return ResponseEntity.badRequest().body("roleName is required");
+        }
+
+        var existing = roleRepository.findByRoleName(request.getRoleName());
+        if (existing != null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Role already exists");
+        }
+
+        var role = new com.InSpace.Api.domain.Role();
+        role.setRoleName(request.getRoleName());
+        role.setDescription(request.getDescription());
+        roleRepository.save(role);
+        return ResponseEntity.status(HttpStatus.CREATED).body(role);
     }
 
     @PermitAll

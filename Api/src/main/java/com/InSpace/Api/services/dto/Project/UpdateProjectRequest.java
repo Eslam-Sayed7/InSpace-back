@@ -1,23 +1,20 @@
-package com.InSpace.Api.services.dto.TestSuite;
+package com.InSpace.Api.services.dto.Project;
 
 import jakarta.validation.constraints.NotBlank;
 
-// DTOs for request/response
-public class CreateTestSuiteRequest {
+public class UpdateProjectRequest {
     @NotBlank(message = "Name is required")
     private String name;
     private String description;
 
-    // Constructors
-    public CreateTestSuiteRequest() {
+    public UpdateProjectRequest() {
     }
 
-    public CreateTestSuiteRequest(String name, String description) {
+    public UpdateProjectRequest(String name, String description) {
         this.name = name;
         this.description = description;
     }
 
-    // Getters and Setters
     public String getName() {
         return name;
     }

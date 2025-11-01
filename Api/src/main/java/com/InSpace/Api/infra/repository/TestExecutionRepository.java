@@ -1,7 +1,7 @@
 package com.InSpace.Api.infra.repository;
 
 import com.InSpace.Api.domain.TestExecution;
-import com.InSpace.Api.domain.TestScenario;
+import com.InSpace.Api.domain.TestCase;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -16,15 +16,15 @@ public interface TestExecutionRepository extends JpaRepository<TestExecution, Lo
 
     List<TestExecution> findByRunIdentifierOrderByTestStep_SequenceOrder(UUID runIdentifier);
 
-    List<TestExecution> findByTestScenario_ScenarioIdOrderByStartedAtDesc(Long scenarioId);
+    List<TestExecution> findByTestCase_TestcaseIdOrderByStartedAtDesc(Long testcaseId);
 
     List<TestExecution> findByExecutionStatus_Name(String statusName);
 
-    List<TestExecution> findByTestScenarioAndRunIdentifierOrderByTestStep_SequenceOrder(
-        TestScenario testScenario, UUID runIdentifier);
+    List<TestExecution> findByTestCaseAndRunIdentifierOrderByTestStep_SequenceOrder(
+        TestCase testCase, UUID runIdentifier);
 
-    @Query("SELECT DISTINCT te.runIdentifier FROM TestExecution te WHERE te.testScenario = :scenario ORDER BY MIN(te.startedAt) DESC")
-    List<UUID> findDistinctRunIdentifiersByTestScenarioOrderByStartedAtDesc(@Param("scenario") TestScenario testScenario);
+    @Query("SELECT DISTINCT te.runIdentifier FROM TestExecution te WHERE te.testCase = :testCase ORDER BY MIN(te.startedAt) DESC")
+    List<UUID> findDistinctRunIdentifiersByTestCaseOrderByStartedAtDesc(@Param("testCase") TestCase testCase);
 
     @Query("SELECT te FROM TestExecution te WHERE te.runIdentifier = :runId AND te.executionStatus.name = :statusName")
     List<TestExecution> findByRunIdentifierAndStatusName(@Param("runId") UUID runIdentifier, @Param("statusName") String statusName);

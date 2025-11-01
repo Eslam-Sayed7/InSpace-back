@@ -3,6 +3,7 @@ package com.InSpace.Api.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.CreationTimestamp;
+import com.InSpace.Api.domain.TestCase;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -17,9 +18,9 @@ public class TestExecution {
     private Long executionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "scenario_id", nullable = false)
-    @NotNull(message = "Test scenario is required")
-    private TestScenario testScenario;
+    @JoinColumn(name = "testcase_id", nullable = false)
+    @NotNull(message = "Testcase is required")
+    private TestCase testCase;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "step_id", nullable = false)
@@ -51,8 +52,8 @@ public class TestExecution {
     public TestExecution() {
     }
 
-    public TestExecution(TestScenario testScenario, TestStep testStep, UUID runIdentifier, ExecutionStatus executionStatus) {
-        this.testScenario = testScenario;
+    public TestExecution(TestCase testCase, TestStep testStep, UUID runIdentifier, ExecutionStatus executionStatus) {
+        this.testCase = testCase;
         this.testStep = testStep;
         this.runIdentifier = runIdentifier;
         this.executionStatus = executionStatus;
@@ -67,12 +68,12 @@ public class TestExecution {
         this.executionId = executionId;
     }
 
-    public TestScenario getTestScenario() {
-        return testScenario;
+    public TestCase getTestCase() {
+        return testCase;
     }
 
-    public void setTestScenario(TestScenario testScenario) {
-        this.testScenario = testScenario;
+    public void setTestCase(TestCase testCase) {
+        this.testCase = testCase;
     }
 
     public TestStep getTestStep() {
